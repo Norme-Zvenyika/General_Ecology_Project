@@ -1,0 +1,131 @@
+#include <Arduino.h>
+
+// Define GPIO pins for LEDs
+#define RedLed 18
+#define YellowLed 17
+#define GreenLed 16
+
+// Define the sensor pin
+#define SensorPin 36
+
+// Calibration constants
+const float pulsesPerLiter = 1260.0;               // Pulses per liter (from sensor datasheet)
+const float volumePerPulse = 1.0 / pulsesPerLiter; // Liters per pulse
+
+// Filter capacity (set this to your filter's maximum capacity in liters)
+const float filterCapacity = 1.0; // Replace with your filter's capacity
+
+// Variables for pulse counting and total volume
+volatile unsigned long pulseCount = 0; // Incremented in ISR
+
+float flowRate = 0.0;    // In liters per minute (L/min)
+float totalVolume = 0.0; // In liters (L)
+
+// Timing variables
+unsigned long lastCalcTime = 0;
+const unsigned long calcInterval = 1000; // Calculation interval in milliseconds (1 second)
+
+// Interrupt Service Routine (ISR)
+void IRAM_ATTR pulseCounter()
+{
+  // Increment pulse count
+  pulseCount++;
+}
+
+// **Function to update filter status LEDs**
+void updateFilterStatus()
+{
+  float usedPercentage = (totalVolume / filterCapacity) * 100.0;
+
+  if (usedPercentage <= 50.0)
+  {
+    // More than 50% capacity remaining
+    digitalWrite(GreenLed, HIGH);
+    digitalWrite(YellowLed, LOW);
+    digitalWrite(RedLed, LOW);
+  }
+  else if (usedPercentage > 50.0 && usedPercentage <= 75.0)
+  {
+    // Between 50% and 75% capacity used
+    digitalWrite(GreenLed, LOW);
+    digitalWrite(YellowLed, HIGH);
+    digitalWrite(RedLed, LOW);
+  }
+  else if (usedPercentage > 75.0 && usedPercentage <= 100.0)
+  {
+    // More than 75% capacity used
+    digitalWrite(GreenLed, LOW);
+    digitalWrite(YellowLed, LOW);
+    digitalWrite(RedLed, HIGH);
+  }
+  else
+  {
+    // Filter capacity exceeded
+    // Optionally implement an alert or keep red LED on
+    digitalWrite(GreenLed, LOW);
+    digitalWrite(YellowLed, LOW);
+    digitalWrite(RedLed, HIGH);
+  }
+}
+
+void setup()
+{
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Initialize the LED pins as outputs
+  pinMode(RedLed, OUTPUT);
+  pinMode(YellowLed, OUTPUT);
+  pinMode(GreenLed, OUTPUT);
+
+  // Turn off all LEDs at startup
+  digitalWrite(RedLed, LOW);
+  digitalWrite(YellowLed, LOW);
+  digitalWrite(GreenLed, LOW);
+
+  // Initialize the sensor pin
+  pinMode(SensorPin, INPUT_PULLUP);
+
+  // Attach interrupt to the sensor pin
+  attachInterrupt(digitalPinToInterrupt(SensorPin), pulseCounter, RISING);
+
+  // Initialize timing variables
+  lastCalcTime = millis();
+}
+
+void loop()
+{
+  unsigned long currentMillis = millis();
+
+  // Check if it's time to perform calculations
+  if (currentMillis - lastCalcTime >= calcInterval)
+  {
+    // Disable interrupts temporarily while accessing shared variables
+    noInterrupts();
+    unsigned long pulses = pulseCount;
+    pulseCount = 0; // Reset pulse count for the next interval
+    interrupts();
+
+    // Calculate flow rate in L/min
+    float frequency = pulses / (calcInterval / 1000.0); // Pulses per second (Hz)
+    flowRate = frequency / 21.0;                        // Q = F / 21
+
+    // Update total volume
+    totalVolume += pulses * volumePerPulse;
+
+    // Print the results
+    Serial.print("Flow Rate: ");
+    Serial.print(flowRate, 3); // Print with 3 decimal places
+    Serial.print(" L/min\tTotal Volume: ");
+    Serial.print(totalVolume, 3);
+    Serial.println(" L");
+
+    // Update filter status LEDs
+    updateFilterStatus();
+
+    // Update lastCalcTime
+    lastCalcTime = currentMillis;
+  }
+
+  // Additional non-blocking code can go here
+}
