@@ -2,29 +2,33 @@
 
 #include "WaterFlowSensor.h"
 
-const float PULSES_PER_LITER_FACTOR = 21.0;
+// Define constants
+const float VOLUME_FOR_ONE_LITER = 1.0;                // Volume equivalent for 1 liter
+const unsigned long CALC_INTERVAL_MS = 1000;           // Calculation interval in milliseconds (1 second)
+const float MILLISECONDS_PER_SECOND = 1000.0;          // Milliseconds per second
 
 // Initialize static member
 WaterFlowSensor *WaterFlowSensor::_instance = nullptr;
 
 // Constructor
-WaterFlowSensor::WaterFlowSensor(uint8_t sensorPin, float pulsesPerLiter)
+WaterFlowSensor::WaterFlowSensor(uint8_t sensorPin, float pulsesPerLiter, float flowRateScalingFactor)
     : _sensorPin(sensorPin),
       _pulsesPerLiter(pulsesPerLiter),
+      _flowRateScalingFactor(flowRateScalingFactor),
       _pulseCount(0),
-      _lastPulseCount(0),
       _flowRate(0.0),
-      _totalVolume(0.0),
+      _volumePassed(0.0),
       _lastCalcTime(0)
 {
-    _volumePerPulse = 1.0 / _pulsesPerLiter;
+    // Calculate volume per pulse based on the pulses per liter
+    _volumePerPulse = VOLUME_FOR_ONE_LITER / _pulsesPerLiter;
 }
 
 // Initialize the sensor
 void WaterFlowSensor::begin()
 {
     pinMode(_sensorPin, INPUT_PULLUP);
-    _instance = this; // Set the static instance pointer to this instance
+    _instance = this;
     attachInterrupt(digitalPinToInterrupt(_sensorPin), WaterFlowSensor::pulseCounter, RISING);
     _lastCalcTime = millis();
 }
@@ -38,12 +42,12 @@ void IRAM_ATTR WaterFlowSensor::pulseCounter()
     }
 }
 
-// Update method to be called regularly
+// Update method to calculate flow rate and filtered volume over the measurement period
 void WaterFlowSensor::update()
 {
     unsigned long currentMillis = millis();
 
-    if (currentMillis - _lastCalcTime >= _calcInterval)
+    if (currentMillis - _lastCalcTime >= CALC_INTERVAL_MS)
     {
         // Disable interrupts while accessing shared variables
         noInterrupts();
@@ -51,14 +55,16 @@ void WaterFlowSensor::update()
         _pulseCount = 0;
         interrupts();
 
-        // Calculate flow rate in L/min
-        float frequency = pulses / (_calcInterval / 1000.0); // Pulses per second (Hz)
-        _flowRate = frequency / PULSES_PER_LITER_FACTOR;     // Q = F / PULSES_PER_LITER_FACTOR
+        // Calculate frequency in Hz (pulses per second)
+        float frequency = pulses / (CALC_INTERVAL_MS / MILLISECONDS_PER_SECOND);  // Pulses per second (Hz)
 
-        // Update total volume
-        _totalVolume += pulses * _volumePerPulse;
+        // Calculate flow rate in L/min using the scaling factor
+        _flowRate = (frequency / _flowRateScalingFactor);
 
-        // Update last calculation time
+        // Calculate the volume filtered during this interval
+        _volumePassed = pulses * _volumePerPulse;
+
+        // Update the last calculation time
         _lastCalcTime = currentMillis;
     }
 }
@@ -69,32 +75,13 @@ float WaterFlowSensor::getFlowRate()
     return _flowRate;
 }
 
-// Get total volume in liters
-float WaterFlowSensor::getTotalVolume()
+// Get the volume of water filtered in liters during the measurement period
+float WaterFlowSensor::getVolumePassed()
 {
-    return _totalVolume;
+    return _volumePassed;
 }
 
-// Get used percentage based on filter capacity
-float WaterFlowSensor::getUsedPercentage(float filterCapacity)
-{
-    if (filterCapacity > 0)
-    {
-        return (_totalVolume / filterCapacity) * 100.0;
-    }
-    else
-    {
-        return 0.0;
-    }
-}
-
-// Reset total volume
-void WaterFlowSensor::resetTotalVolume()
-{
-    _totalVolume = 0.0;
-}
-
-// Calibration function
+// Calibration function to adjust pulses per liter based on a known volume
 void WaterFlowSensor::calibrate(float knownVolume)
 {
     // Disable interrupts while accessing shared variables
@@ -105,12 +92,12 @@ void WaterFlowSensor::calibrate(float knownVolume)
 
     if (knownVolume > 0.0)
     {
-        // Calculate new pulses per liter
+        // Calculate new pulses per liter based on known volume
         float newPulsesPerLiter = pulses / knownVolume;
 
         // Update calibration constants
         _pulsesPerLiter = newPulsesPerLiter;
-        _volumePerPulse = 1.0 / _pulsesPerLiter;
+        _volumePerPulse = VOLUME_FOR_ONE_LITER / _pulsesPerLiter;
 
         Serial.print("Calibration complete. New pulses per liter: ");
         Serial.println(_pulsesPerLiter);
@@ -119,17 +106,4 @@ void WaterFlowSensor::calibrate(float knownVolume)
     {
         Serial.println("Calibration failed. Known volume must be greater than zero.");
     }
-}
-
-// Reset the sensor
-void WaterFlowSensor::reset()
-{
-    // Disable interrupts while accessing shared variables
-    noInterrupts();
-    _pulseCount = 0;
-    interrupts();
-
-    _flowRate = 0.0;
-    _totalVolume = 0.0;
-    _lastCalcTime = millis();
 }
