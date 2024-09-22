@@ -3,21 +3,38 @@
 #include "BLE.h"
 
 // Constructor
-BLE::BLE() {}
+BLE::BLE(const String& deviceName) : _deviceName(deviceName)
+{
+    // Empty constructor body
+}
 
 // Initialize the BLE module (initialize the LCD for now)
 void BLE::begin()
 {
-    // Scan for I2C devices before initializing the LCD
-    if (scanI2CDevices())
+    // Start I2C communication
+    Wire.begin();
+    
+    // Scan I2C devices to make sure the LCD is connected
+    if (!scanI2CDevices())
     {
-        _lcd.init();             // Initialize the LCD
-        _lcd.backlight();        // Turn on the LCD backlight
-        _lcd.print("LCD Found"); // Display a test message
+        Serial.println("LCD not found on I2C bus.");
     }
     else
     {
-        Serial.println("No I2C LCD found.");
+        _lcd.begin(16, 2);         // Initialize the LCD with 16 columns and 2 rows
+        _lcd.backlight();          // Turn on the backlight
+        _lcd.clear();              // Clear any old data
+        
+        // First row
+        _lcd.setCursor(0, 0);      // Set cursor to the first row, first column
+        _lcd.print("Welcome!");    // Display "Welcome!" on the first row
+
+        // Second row
+        _lcd.setCursor(0, 1);      // Set cursor to the first column of the second row
+        _lcd.print(_deviceName);   // Display the device name on the second row
+        
+        //delay for 4 seconds displaying the welcome message
+        delay(4000);
     }
 }
 
@@ -39,8 +56,8 @@ void BLE::displayData(float flowRate, float totalWaterFiltered)
 // Prepare data for future Bluetooth transmission
 String BLE::prepareDataForBluetooth(float flowRate, float totalWaterFiltered)
 {
-    String data = "Flow Rate: " + String(flowRate, 2) + " L/min\n";
-    data += "Total Water: " + String(totalWaterFiltered, 2) + " L";
+    String data = "Flow Rate: " + String(flowRate, 2) + "L/min\n";
+    data += "Total Water: " + String(totalWaterFiltered, 2) + "L";
     return data;
 }
 
