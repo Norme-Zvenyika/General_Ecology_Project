@@ -17,34 +17,31 @@ const float PULSES_PER_LITER = 1260.0; // Pulses per liter
 // Create an instance of WaterFilter using the global constants
 WaterFilter waterFilter(RED_LED_PIN, YELLOW_LED_PIN, GREEN_LED_PIN, FLOW_SENSOR_PIN, RESET_BUTTON_PIN, FILTER_CAPACITY, PULSES_PER_LITER);
 
-float flowRate = 1.23; // Example flow rate in L/min
-float totalWaterFiltered = 10.5;
-
 void setup()
 {
-  // // display to the LED
-  // Wire.begin();
+  // display to the LED
+  Wire.begin();
 
-  // // Set up Serial communication with a baud rate of 115200
-  // Serial.begin(115200);
+  // Set up Serial communication with a baud rate of 115200
+  Serial.begin(115200);
 
-  // // start the filter
-  // waterFilter.begin();
+  // start the filter
+  waterFilter.begin();
 
   // display to the terminal
   // Serial.begin(9600);
 
-  // uncomment the following for calibration
-  Wire.begin();
-  Serial.begin(115200);
+  // // uncomment the following for calibration
+  // Wire.begin();
+  // Serial.begin(115200);
 
-  // Initialize the Water Filter system
-  waterFilter.begin();
+  // // Initialize the Water Filter system
+  // waterFilter.begin();
 
-  // Simulate a 1-liter pour to calibrate
-  Serial.println("Please pour 1 liter of water to calibrate...");
-  delay(60000);               // Wait 10 seconds for you to pour water
-  waterFilter.calibrate(0.3); // eneter the amount you want to pour
+  // // Simulate a 1-liter pour to calibrate
+  // Serial.println("Please pour 1 liter of water to calibrate...");
+  // delay(60000);               // Wait 10 seconds for you to pour water
+  // waterFilter.calibrate(0.3); // eneter the amount you want to pour
 }
 
 void loop()
