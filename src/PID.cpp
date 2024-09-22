@@ -2,11 +2,12 @@
 
 // Constructor to initialize all components
 PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin, 
-         float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor)
+         float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor, const String& deviceName)
     : _ledControl(redLedPin, yellowLedPin, greenLedPin),
       _waterFlowSensor(flowSensorPin, pulsesPerLiterConversion, flowRateScalingFactor),
       _resetButton(resetButtonPin),
       _waterFilter(_ledControl, _resetButton, _waterFlowSensor, filterCapacityLiters),
+      _ble(deviceName),
       _filterCapacityLiters(filterCapacityLiters),
       _pulsesPerLiterConversion(pulsesPerLiterConversion),
       _flowRateScalingFactor(flowRateScalingFactor)
@@ -33,7 +34,7 @@ void PID::update()
     float totalVolume = _waterFilter.getTotalVolume();
     
     _ble.displayData(flowRate, totalVolume);  // Display on the LCD
-    String dataForBluetooth = _ble.prepareDataForBluetooth(flowRate, totalVolume);  // Prepare data for Bluetooth transmission
+    // String dataForBluetooth = _ble.prepareDataForBluetooth(flowRate, totalVolume);  // Prepare data for Bluetooth transmission
 }
 
 void PID::calibrateFlowSensor(float knownVolume)

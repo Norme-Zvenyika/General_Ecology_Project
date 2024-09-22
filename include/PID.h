@@ -3,19 +3,20 @@
 #ifndef PID_H
 #define PID_H
 
-#include <Arduino.h>
 #include "LEDControl.h"
 #include "WaterFlowSensor.h"
 #include "ResetButton.h"
 #include "WaterFilter.h"
 #include "BLE.h"
+#include <Arduino.h>
+
 
 class PID
 {
 public:
     // Constructor that accepts the necessary constants and pins
     PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin, 
-        float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor);
+        float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor, const String& deviceName);
 
     // Initialize all components (LEDs, flow sensor, reset button, BLE, WaterFilter)
     void begin();
