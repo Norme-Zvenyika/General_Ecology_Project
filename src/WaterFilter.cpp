@@ -6,8 +6,9 @@
 WaterFilter::WaterFilter(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t resetButtonPin, const float filterCapacityLiters)
     : _ledControl(redLedPin, yellowLedPin, greenLedPin),
       _resetButtonPin(resetButtonPin),
-      _filterCapacity(filterCapacityLiters), // Initialize filter capacity as constant
-      _usedPercentage(0.0)
+      _filterCapacity(filterCapacityLiters),
+      _usedPercentage(0.0),
+      _totalVolume(0.0)
 {
 }
 
@@ -17,41 +18,37 @@ void WaterFilter::begin()
     // Initialize components
     _ledControl.begin();
 
-    // Initialize the Bluetooth module
-    _bleModule.begin();
-
     // Initialize reset button pin
     pinMode(_resetButtonPin, INPUT_PULLUP);
-
-    // Initialize other variables if necessary
-    _usedPercentage = 0.0;
 }
 
 // Update method to be called regularly in the main loop
-void WaterFilter::update(float flowRate, float totalVolume)
+void WaterFilter::update(float totalVolume)
 {
-    // Calculate the used percentage
-    _usedPercentage = (totalVolume / _filterCapacity) * 100.0;
+    // Update total volume from WaterFlowSensor
+    _totalVolume = totalVolume;
 
-    // Update the LEDs based on used percentage
+    // Calculate the used percentage
+    _usedPercentage = (_totalVolume / _filterCapacity) * 100.0;
+
+    // Update LEDs based on used percentage
     _updateLEDs();
 
     // Handle reset button press
     _handleResetButton();
-
-    // Display the message via BLE
-    _bleModule.displayData(flowRate, totalVolume);
 }
 
-// Reset the filter usage (e.g., when the filter is replaced)
+// Reset the filter usage when the filter is replaced
 void WaterFilter::resetFilter()
 {
-    // Re-initialize the system as in begin()
-    _ledControl.allOff(); // Turn off all LEDs
-    _usedPercentage = 0.0;
+    _totalVolume = 0.0;  // Reset the total volume
+    _usedPercentage = 0.0;  // Reset the percentage
+
+    // Turn off all LEDs
+    _ledControl.allOff();
 }
 
-// Get used percentage based on total volume and filter capacity
+// Get used percentage based on filter capacity
 float WaterFilter::getUsedPercentage()
 {
     return _usedPercentage;

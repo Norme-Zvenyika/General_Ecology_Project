@@ -5,7 +5,6 @@
 
 #include <Arduino.h>
 #include "LEDControl.h"
-#include "BLE.h"
 #include "WaterFlowSensor.h"
 
 class WaterFilter
@@ -35,7 +34,6 @@ public:
 private:
     // Components
     LEDControl _ledControl;
-    BLE _bleModule;
 
     // Reset button pin
     uint8_t _resetButtonPin;
