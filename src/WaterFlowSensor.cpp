@@ -46,7 +46,6 @@ void IRAM_ATTR WaterFlowSensor::pulseCounter()
 void WaterFlowSensor::update()
 {
     unsigned long currentMillis = millis();
-
     if (currentMillis - _lastCalcTime >= CALC_INTERVAL_MS)
     {
         // Disable interrupts while accessing shared variables
@@ -59,7 +58,7 @@ void WaterFlowSensor::update()
         float frequency = pulses / (CALC_INTERVAL_MS / MILLISECONDS_PER_SECOND);  // Pulses per second (Hz)
 
         // Calculate flow rate in L/min using the scaling factor
-        _flowRate = (frequency / _flowRateScalingFactor);
+        _flowRate = (frequency / _flowRateScalingFactor); // Convert to liters per minute
 
         // Calculate the volume filtered during this interval
         _volumePassed = pulses * _volumePerPulse;
@@ -97,7 +96,7 @@ void WaterFlowSensor::calibrate(float knownVolume)
 
         // Update calibration constants
         _pulsesPerLiter = newPulsesPerLiter;
-        _volumePerPulse = VOLUME_FOR_ONE_LITER / _pulsesPerLiter;
+        _volumePerPulse = VOLUME_FOR_ONE_LITER / _pulsesPerLiter;  // Correct recalculation of volume per pulse
 
         Serial.print("Calibration complete. New pulses per liter: ");
         Serial.println(_pulsesPerLiter);
