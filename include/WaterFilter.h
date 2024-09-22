@@ -11,30 +11,25 @@
 class WaterFilter
 {
 public:
+    
     // Constructor
-    WaterFilter(
-        LEDControl& ledControl,         
-        ResetButton& resetButton,       
-        WaterFlowSensor& waterFlowSensor, 
-        const float filterCapacityLiters);
+    WaterFilter(LEDControl& ledControl, ResetButton& resetButton, WaterFlowSensor& waterFlowSensor, const float filterCapacityLiters);
 
-    // Initialize the water filter system
-    void begin();
-
-    // Fetch and accumulate volume from WaterFlowSensor
-    void update(); 
+    // Update method to be called regularly in the main loop
+    void update();
 
     // Reset the filter usage (e.g., when the filter is replaced)
     void resetFilter();
 
     // Getters
-    float getUsedPercentage();       // Returns used percentage of the filter
-    float getFilterCapacity() const; // Returns filter capacity in liters
-
+    float getUsedPercentage() const;  // Returns used percentage of the filter
+    float getFilterCapacity() const;  // Returns filter capacity in liters
+    float getTotalVolume() const;     // Returns total volume filtered so far 
 private:
+    
     // Components
-    LEDControl& _ledControl;           
-    ResetButton& _resetButton;         
+    LEDControl& _ledControl;
+    ResetButton& _resetButton;
     WaterFlowSensor& _waterFlowSensor;
 
     // Filter capacity (constant)
@@ -43,10 +38,6 @@ private:
     // State variables
     float _usedPercentage;
     float _totalVolume;
-
-    // Private methods
-    void _updateLEDs();
-    void _handleResetButton();
 };
 
 #endif // WATERFILTER_H
