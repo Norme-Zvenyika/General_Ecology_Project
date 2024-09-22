@@ -3,12 +3,10 @@
 #include "WaterFilter.h"
 
 // Constructor
-WaterFilter::WaterFilter(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin, const float filterCapacityLiters, const float pulsesPerLiter)
+WaterFilter::WaterFilter(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t resetButtonPin, const float filterCapacityLiters)
     : _ledControl(redLedPin, yellowLedPin, greenLedPin),
-      _waterFlowSensor(flowSensorPin, pulsesPerLiter),
       _resetButtonPin(resetButtonPin),
       _filterCapacity(filterCapacityLiters), // Initialize filter capacity as constant
-      _pulsesPerLiter(pulsesPerLiter),       // Initialize pulses per liter as constant
       _usedPercentage(0.0)
 {
 }
@@ -18,10 +16,10 @@ void WaterFilter::begin()
 {
     // Initialize components
     _ledControl.begin();
-    _waterFlowSensor.begin();
 
-    //  initialize the bluetooth module
+    // Initialize the Bluetooth module
     _bleModule.begin();
+
     // Initialize reset button pin
     pinMode(_resetButtonPin, INPUT_PULLUP);
 
@@ -30,13 +28,10 @@ void WaterFilter::begin()
 }
 
 // Update method to be called regularly in the main loop
-void WaterFilter::update()
+void WaterFilter::update(float flowRate, float totalVolume)
 {
-    // Update the water flow sensor
-    _waterFlowSensor.update();
-
     // Calculate the used percentage
-    _usedPercentage = getUsedPercentage();
+    _usedPercentage = (totalVolume / _filterCapacity) * 100.0;
 
     // Update the LEDs based on used percentage
     _updateLEDs();
@@ -44,59 +39,27 @@ void WaterFilter::update()
     // Handle reset button press
     _handleResetButton();
 
-    // display the message
-    _bleModule.displayData(getFlowRate(), getTotalVolume());
+    // Display the message via BLE
+    _bleModule.displayData(flowRate, totalVolume);
 }
 
 // Reset the filter usage (e.g., when the filter is replaced)
 void WaterFilter::resetFilter()
 {
     // Re-initialize the system as in begin()
-    _waterFlowSensor.reset();
     _ledControl.allOff(); // Turn off all LEDs
     _usedPercentage = 0.0;
 }
 
-// Calibration method
-void WaterFilter::calibrate(float knownVolume)
-{
-    _waterFlowSensor.calibrate(knownVolume);
-}
-
-// Getters
-
-float WaterFilter::getFlowRate()
-{
-    return _waterFlowSensor.getFlowRate();
-}
-
-float WaterFilter::getTotalVolume()
-{
-    return _waterFlowSensor.getTotalVolume();
-}
-
+// Get used percentage based on total volume and filter capacity
 float WaterFilter::getUsedPercentage()
 {
-    float totalVolume = _waterFlowSensor.getTotalVolume();
-    if (_filterCapacity > 0)
-    {
-        return (totalVolume / _filterCapacity) * 100.0;
-    }
-    else
-    {
-        return 0.0;
-    }
+    return _usedPercentage;
 }
 
 float WaterFilter::getFilterCapacity() const
 {
     return _filterCapacity;
-}
-
-// **Getter for pulses per liter**
-float WaterFilter::getPulsesPerLiter() const
-{
-    return _pulsesPerLiter;
 }
 
 // Private methods
