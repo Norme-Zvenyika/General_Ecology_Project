@@ -14,6 +14,9 @@ WaterFilter::WaterFilter(LEDControl& ledControl, ResetButton& resetButton, Water
 // Update method to be called regularly in the main loop
 void WaterFilter::update()
 {
+    // call the water flow sensor
+    _waterFlowSensor.update();
+    
     // Get the volume passed in the current interval from the WaterFlowSensor
     float volumePassed = _waterFlowSensor.getVolumePassed();
 
