@@ -35,3 +35,8 @@ void PID::update()
     _ble.displayData(flowRate, totalVolume);  // Display on the LCD
     String dataForBluetooth = _ble.prepareDataForBluetooth(flowRate, totalVolume);  // Prepare data for Bluetooth transmission
 }
+
+void PID::calibrateFlowSensor(float knownVolume)
+{
+    _waterFlowSensor.calibrate(knownVolume);
+}
