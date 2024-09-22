@@ -10,8 +10,8 @@
 class BLE
 {
 public:
-    // Constructor
-    BLE();
+    // Constructor that accepts a device name
+    BLE(const String& deviceName);
 
     // Initialize the BLE module (in this case, initialize the LCD)
     void begin();
@@ -31,6 +31,9 @@ private:
 
     // The address of the I2C device (can be set during scanning)
     uint8_t _lcdAddress = 0x27; // Default I2C address
+
+    // Device name to display on the LCD
+    String _deviceName;
 };
 
 #endif // BLE_H
