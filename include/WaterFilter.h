@@ -16,42 +16,32 @@ public:
         uint8_t redLedPin,
         uint8_t yellowLedPin,
         uint8_t greenLedPin,
-        uint8_t flowSensorPin,
         uint8_t resetButtonPin,
-        const float filterCapacityLiters,
-        const float pulsesPerLiter);
+        const float filterCapacityLiters);
 
     // Initialize the water filter system
     void begin();
 
     // Update method to be called regularly in the main loop
-    void update();
+    void update(float flowRate, float totalVolume); // Accept flow rate and total volume from WaterFlowSensor
 
     // Reset the filter usage (e.g., when the filter is replaced)
     void resetFilter();
 
-    // Calibration method
-    void calibrate(float knownVolume);
-
     // Getters
-    float getFlowRate();       // Returns flow rate in L/min
-    float getTotalVolume();    // Returns total volume in liters
     float getUsedPercentage(); // Returns used percentage of the filter
     float getFilterCapacity() const;
-    float getPulsesPerLiter() const;
 
 private:
     // Components
     LEDControl _ledControl;
-    WaterFlowSensor _waterFlowSensor;
     BLE _bleModule;
 
     // Reset button pin
     uint8_t _resetButtonPin;
 
-    // Filter capacity and pulses per liter (constant)
+    // Filter capacity (constant)
     const float _filterCapacity;
-    const float _pulsesPerLiter;
 
     // State variables
     float _usedPercentage;
