@@ -23,14 +23,14 @@ public:
     void begin();
 
     // Update method to be called regularly in the main loop
-    void update(float flowRate, float totalVolume); // Accept flow rate and total volume from WaterFlowSensor
+    void update(float totalVolume);  // Accept total volume from WaterFlowSensor
 
     // Reset the filter usage (e.g., when the filter is replaced)
     void resetFilter();
 
     // Getters
-    float getUsedPercentage(); // Returns used percentage of the filter
-    float getFilterCapacity() const;
+    float getUsedPercentage();       // Returns used percentage of the filter
+    float getFilterCapacity() const; // Returns filter capacity in liters
 
 private:
     // Components
@@ -45,6 +45,7 @@ private:
 
     // State variables
     float _usedPercentage;
+    float _totalVolume;
 
     // Private methods
     void _updateLEDs();
