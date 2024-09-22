@@ -9,7 +9,7 @@ class WaterFlowSensor
 {
 public:
     // Constructor
-    WaterFlowSensor(uint8_t sensorPin, float pulsesPerLiter = 1260.0);
+    WaterFlowSensor(uint8_t sensorPin, float pulsesPerLiter, float flowRateScalingFactor);
 
     // Initialize the sensor
     void begin();
@@ -18,37 +18,26 @@ public:
     void update();
 
     // Getters
-    float getFlowRate();                           // Returns flow rate in L/min
-    float getTotalVolume();                        // Returns total volume in liters
-    float getUsedPercentage(float filterCapacity); // Returns used percentage based on filter capacity
-
-    // Reset total volume (e.g., when filter is replaced)
-    void resetTotalVolume();
-
-    // Reset the sensor
-    void reset();
-
-    // Calibration function (optional)
-    void calibrate(float knownVolume);
+    float getFlowRate();        // Returns flow rate in L/min
+    float getVolumePassed();    // Returns the volume of water filtered in liters during the measurement period
 
 private:
     uint8_t _sensorPin;
 
     // Calibration constants
-    float _pulsesPerLiter;
-    float _volumePerPulse;
+    float _pulsesPerLiter;         // Number of pulses required for 1 liter of water
+    float _flowRateScalingFactor;  // Scaling factor for flow rate calculation
+    float _volumePerPulse;         // Amount of water (liters) per pulse
 
     // Pulse counting variables
-    volatile unsigned long _pulseCount;
-    unsigned long _lastPulseCount;
+    volatile unsigned long _pulseCount;  // Number of pulses detected
 
     // Flow calculation variables
-    float _flowRate;    // In liters per minute
-    float _totalVolume; // In liters
+    float _flowRate;    // Flow rate in liters per minute
+    float _volumePassed; // Volume filtered during the current interval in liters
 
     // Timing variables
     unsigned long _lastCalcTime;
-    const unsigned long _calcInterval = 1000; // 1 second
 
     // Interrupt Service Routine (ISR)
     static void IRAM_ATTR pulseCounter();
