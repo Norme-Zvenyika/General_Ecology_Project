@@ -3,62 +3,125 @@
 #include "BLE.h"
 
 // Constructor
-BLE::BLE(const String& deviceName) : _deviceName(deviceName)
+BLE::BLE(const String& deviceName, const String& serviceUUID, const String& characteristicTXUUID, const String& characteristicRXUUID)
+    : _deviceName(deviceName), _serviceUUID(serviceUUID), _characteristicTXUUID(characteristicTXUUID), _characteristicRXUUID(characteristicRXUUID)
 {
     // Empty constructor body
 }
 
-// Initialize the BLE module (initialize the LCD for now)
+// Initialize the BLE module and LCD
 void BLE::begin()
 {
-    // Start I2C communication
+    // Start I2C communication and initialize LCD
     Wire.begin();
-    
-    // Scan I2C devices to make sure the LCD is connected
-    if (!scanI2CDevices())
-    {
-        Serial.println("LCD not found on I2C bus.");
-    }
-    else
-    {
-        _lcd.begin(16, 2);         // Initialize the LCD with 16 columns and 2 rows
-        _lcd.backlight();          // Turn on the backlight
-        _lcd.clear();              // Clear any old data
-        
-        // First row
-        _lcd.setCursor(0, 0);      // Set cursor to the first row, first column
-        _lcd.print("Welcome!");    // Display "Welcome!" on the first row
 
-        // Second row
-        _lcd.setCursor(0, 1);      // Set cursor to the first column of the second row
-        _lcd.print(_deviceName);   // Display the device name on the second row
-        
-        //delay for 4 seconds displaying the welcome message
-        delay(4000);
+    // Scan I2C devices to check if the LCD is connected
+    if (!scanI2CDevices()) {
+        // If LCD is not found, maybe handle error on the LCD
+        _lcd.begin(16, 2);  // Initialize the LCD even if no address is detected
+        _lcd.backlight();
+        _lcd.clear();
+        _lcd.setCursor(0, 0);
+        _lcd.print("LCD Error");
+    } else {
+        _lcd.begin(16, 2);  // Initialize the LCD
+        _lcd.backlight();    // Turn on the backlight
+        _lcd.clear();        // Clear the display
+
+        // Display welcome message
+        _lcd.setCursor(0, 0);      
+        _lcd.print("Welcome!");
+        _lcd.setCursor(0, 1);     
+        _lcd.print(_deviceName);   
+
+        delay(4000);  // Display for 4 seconds
     }
+
+    // Initialize the BLE module
+    setupBLE();
 }
 
-// Display the flow rate and total water filtered on the LCD
+// Initialize BLE
+void BLE::setupBLE()
+{
+    BLEDevice::init(_deviceName.c_str());  // Initialize BLE with device name
+    setupBLEServer();                      // Set up BLE server
+    setupBLEService();                     // Set up BLE service and characteristics
+}
+
+// === BLE Server Callbacks ===
+class MyServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer* pServer) override {
+    // Optional: Handle what happens when a client connects
+  }
+
+  void onDisconnect(BLEServer* pServer) override {
+    // Optional: Handle what happens when a client disconnects
+    
+    // Restart advertising after disconnect
+    BLEDevice::startAdvertising();
+  }
+};
+
+// === BLE Characteristic Callbacks ===
+class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic* pCharacteristic) override {
+    // Optional: Handle received data from the client if needed
+  }
+};
+
+// Set up BLE Server
+void BLE::setupBLEServer()
+{
+    pServer = BLEDevice::createServer();  // Create BLE server
+    pServer->setCallbacks(new MyServerCallbacks());  // Set server callbacks
+}
+
+// Set up BLE Service and Characteristics
+void BLE::setupBLEService()
+{
+    BLEService* pService = pServer->createService(_serviceUUID.c_str());  // Create BLE service
+
+    // Create characteristic for sending notifications
+    pCharacteristic = pService->createCharacteristic(
+       _characteristicTXUUID.c_str(), BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ
+    );
+    pCharacteristic->addDescriptor(new BLE2902());
+
+    // Create characteristic for receiving data
+    BLECharacteristic* pCharacteristicRX = pService->createCharacteristic(
+        _characteristicRXUUID.c_str(), BLECharacteristic::PROPERTY_WRITE
+    );
+    pCharacteristicRX->setCallbacks(new MyCharacteristicCallbacks());
+
+    pService->start();                   // Start BLE service
+    BLEDevice::getAdvertising()->start();  // Start advertising
+}
+
+// Send the notification message over BLE
+void BLE::sendNotification(const char* message)
+{
+    pCharacteristic->setValue(message);  // Set characteristic value
+    pCharacteristic->notify();           // Send the notification
+}
+
+// Display the flow rate and total water filtered on the LCD and send it via Bluetooth
 void BLE::displayData(float flowRate, float totalWaterFiltered)
 {
-    _lcd.clear(); // Clear the LCD
+    _lcd.clear();
     _lcd.setCursor(0, 0);
     _lcd.print("Flow: ");
-    _lcd.print(flowRate, 2); // Display flow rate with 2 decimal places
+    _lcd.print(flowRate, 2);  // Display flow rate with 2 decimal places
     _lcd.print(" L/min");
 
     _lcd.setCursor(0, 1);
     _lcd.print("Total: ");
-    _lcd.print(totalWaterFiltered, 2); // Display total water filtered with 2 decimal places
+    _lcd.print(totalWaterFiltered, 2);  // Display total water filtered with 2 decimal places
     _lcd.print(" L");
-}
 
-// Prepare data for future Bluetooth transmission
-String BLE::prepareDataForBluetooth(float flowRate, float totalWaterFiltered)
-{
-    String data = "Flow Rate: " + String(flowRate, 2) + "L/min\n";
-    data += "Total Water: " + String(totalWaterFiltered, 2) + "L";
-    return data;
+    // Prepare and send the data via Bluetooth
+    String data = "Volume: " + String(totalWaterFiltered, 2) + " L";
+    sendNotification(data.c_str());
 }
 
 // **New function to scan I2C devices and assign the correct address**
@@ -67,40 +130,14 @@ bool BLE::scanI2CDevices()
     byte error, address;
     int nDevices = 0;
 
-    // Loop through all possible I2C addresses (1 to 126)
-    for (address = 1; address < 127; address++)
-    {
-        Wire.beginTransmission(address); // Start I2C transmission
-        error = Wire.endTransmission();  // End the transmission and capture error code
+    for (address = 1; address < 127; address++) {
+        Wire.beginTransmission(address);
+        error = Wire.endTransmission();
 
-        if (error == 0)
-        {
-            if (address < 16)
-            {
-                Serial.print("0");
-            }
-            Serial.println(address, HEX);
-            _lcdAddress = address; // Set the detected address
+        if (error == 0) {
             nDevices++;
         }
-        else if (error == 4)
-        {
-            Serial.print("Unknown error at address 0x");
-            if (address < 16)
-            {
-                Serial.print("0");
-            }
-            Serial.println(address, HEX);
-        }
     }
 
-    if (nDevices == 0)
-    {
-        Serial.println("No I2C devices found.");
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return nDevices > 0;
 }
