@@ -9,7 +9,7 @@ class ResetButton
 {
 public:
     // Constructor: Pass the pin where the button is connected and optional debounce delay
-    ResetButton(uint8_t buttonPin, unsigned long debounceDelay = 10);
+    ResetButton(uint8_t buttonPin, unsigned long debounceDelay = 2);
 
     // Initialize the button pin
     void begin();
