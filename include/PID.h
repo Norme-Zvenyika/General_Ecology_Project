@@ -25,9 +25,6 @@ public:
     // Run all components (update WaterFilter, handle display, etc.)
     void update();
 
-    // Expose the function to calibrate the flow sensor
-    void calibrateFlowSensor(float knownVolume);
-
 private:
     // Components
     LEDControl _ledControl;
