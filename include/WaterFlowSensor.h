@@ -21,9 +21,6 @@ public:
     float getFlowRate();        // Returns flow rate in L/min
     float getVolumePassed();    // Returns the volume of water filtered in liters during the measurement period
 
-    // Calibration function
-    void calibrate(float knownVolume);  // Recalibrate the pulsesPerLiter based on known volume
-
 private:
     uint8_t _sensorPin;
 

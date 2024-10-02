@@ -29,7 +29,7 @@ void WaterFlowSensor::begin()
 {
     pinMode(_sensorPin, INPUT_PULLUP);
     _instance = this;
-    attachInterrupt(digitalPinToInterrupt(_sensorPin), WaterFlowSensor::pulseCounter, RISING);
+    attachInterrupt(digitalPinToInterrupt(_sensorPin), WaterFlowSensor::pulseCounter, FALLING);
     _lastCalcTime = millis();
 }
 
@@ -78,31 +78,4 @@ float WaterFlowSensor::getFlowRate()
 float WaterFlowSensor::getVolumePassed()
 {
     return _volumePassed;
-}
-
-// Calibration function to adjust pulses per liter based on a known volume
-void WaterFlowSensor::calibrate(float knownVolume)
-{
-    // Disable interrupts while accessing shared variables
-    noInterrupts();
-    unsigned long pulses = _pulseCount;
-    _pulseCount = 0;
-    interrupts();
-
-    if (knownVolume > 0.0)
-    {
-        // Calculate new pulses per liter based on known volume
-        float newPulsesPerLiter = pulses / knownVolume;
-
-        // Update calibration constants
-        _pulsesPerLiter = newPulsesPerLiter;
-        _volumePerPulse = VOLUME_FOR_ONE_LITER / _pulsesPerLiter;  // Correct recalculation of volume per pulse
-
-        Serial.print("Calibration complete. New pulses per liter: ");
-        Serial.println(_pulsesPerLiter);
-    }
-    else
-    {
-        Serial.println("Calibration failed. Known volume must be greater than zero.");
-    }
 }
