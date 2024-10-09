@@ -38,7 +38,7 @@ void BLE::begin()
     }
 
     // Initialize the BLE module
-    // setupBLE();
+    setupBLE();
 }
 
 // Initialize BLE
@@ -121,7 +121,7 @@ void BLE::displayData(float flowRate, float totalWaterFiltered)
 
     // Prepare and send the data via Bluetooth
     String data = "Volume: " + String(totalWaterFiltered, 2) + " L";
-    // sendNotification(data.c_str());
+    sendNotification(data.c_str());
 }
 
 // **New function to scan I2C devices and assign the correct address**
