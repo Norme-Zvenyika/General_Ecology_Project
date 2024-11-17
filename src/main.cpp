@@ -2,6 +2,7 @@
 #include "PID.h"
 #include "BLE.h"
 #include "WaterFlowSensor.h"
+#include "AlarmManager.h"
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -10,6 +11,7 @@
 #define YELLOW_LED_PIN 17
 #define GREEN_LED_PIN 16
 #define FLOW_SENSOR_PIN 25
+#define CLOCK_INTERRUPT_PIN 4
 #define RESET_BUTTON_PIN 36
 #define SERVICE_UUID           "cca082e8-8ed2-4a53-9b7c-ff8f5ffc978d"
 #define CHARACTERISTIC_UUID_RX "ecc6cf21-ed9b-40be-ba42-75ea9ca44b12"
@@ -21,6 +23,12 @@ const float PULSES_PER_LITER_CONVERSION = 746;      // Pulses per liter conversi
 const float FLOW_RATE_SCALING_FACTOR = 12.4;           // Flow rate scaling factor (21 Hz per L/min)
 const String DEVICE_NAME = "GE Filter PID";
 
+// Alarm timing configuration
+const int alarmMonths = 0;
+const int alarmDays = 0;
+const int alarmHours = 0;
+const int alarmMinutes = 1;
+
 // Timing variable for non-blocking update
 unsigned long lastUpdateTime = 0;
 const unsigned long UPDATE_INTERVAL_MS = 1000;
@@ -28,7 +36,8 @@ const unsigned long UPDATE_INTERVAL_MS = 1000;
 // Create an instance of the PID class
 PID pidSystem(RED_LED_PIN, YELLOW_LED_PIN, GREEN_LED_PIN, FLOW_SENSOR_PIN, RESET_BUTTON_PIN,
               FILTER_CAPACITY_LITERS, PULSES_PER_LITER_CONVERSION, FLOW_RATE_SCALING_FACTOR,
-              SERVICE_UUID,CHARACTERISTIC_UUID_RX, CHARACTERISTIC_UUID_TX, DEVICE_NAME);
+              SERVICE_UUID,CHARACTERISTIC_UUID_RX, CHARACTERISTIC_UUID_TX, DEVICE_NAME, CLOCK_INTERRUPT_PIN,
+              alarmMonths, alarmDays, alarmHours, alarmMinutes);
 
 void setup() {
     Serial.begin(115200);
