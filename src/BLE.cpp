@@ -45,6 +45,7 @@ void BLE::begin()
 void BLE::setupBLE()
 {
     BLEDevice::init(_deviceName.c_str());  // Initialize BLE with device name
+    BLEDevice::setMTU(517);
     setupBLEServer();                      // Set up BLE server
     setupBLEService();                     // Set up BLE service and characteristics
 }
@@ -106,22 +107,24 @@ void BLE::sendNotification(const char* message)
 }
 
 // Display the flow rate and total water filtered on the LCD and send it via Bluetooth
-void BLE::displayData(float flowRate, float totalWaterFiltered)
+void BLE::displayData(float flowRate, float totalWaterFiltered, const String& filterStatus, const String& lastResetDate)
 {
-    _lcd.clear();
-    _lcd.setCursor(0, 0);
-    _lcd.print("Flow: ");
-    _lcd.print(flowRate, 2);  // Display flow rate with 2 decimal places
-    _lcd.print(" L/min");
+    // _lcd.clear();
+    // _lcd.setCursor(0, 0);
+    // _lcd.print("Flow: ");
+    // _lcd.print(flowRate, 2);  // Display flow rate with 2 decimal places
+    // _lcd.print(" L/min");
 
-    _lcd.setCursor(0, 1);
-    _lcd.print("Total: ");
-    _lcd.print(totalWaterFiltered, 2);  // Display total water filtered with 2 decimal places
-    _lcd.print(" L");
+    // _lcd.setCursor(0, 1);
+    // _lcd.print("Total: ");
+    // _lcd.print(totalWaterFiltered, 2);  // Display total water filtered with 2 decimal places
+    // _lcd.print(" L");
 
-    // Prepare and send the data via Bluetooth
-    String data = "Volume: " + String(totalWaterFiltered, 2) + " L";
-    sendNotification(data.c_str());
+    // Prepare and send the data via Bluetooth in smaller packets
+    sendNotification(("Flow Rate: " + String(flowRate, 2) + " L/min").c_str());
+    sendNotification(("Total Volume: " + String(totalWaterFiltered, 2) + " L").c_str());
+    sendNotification(("Filter Status: " + filterStatus).c_str());
+    sendNotification(("Last Reset: " + lastResetDate).c_str());
 }
 
 // **New function to scan I2C devices and assign the correct address**

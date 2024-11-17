@@ -21,7 +21,7 @@ public:
     void begin();
 
     // Display the flow rate and total water filtered on the LCD and send it via Bluetooth
-    void displayData(float flowRate, float totalWaterFiltered);
+    void displayData(float flowRate, float totalWaterFiltered, const String& filterStatus, const String& lastResetDate);
 
     // Scan I2C devices for LCD
     bool scanI2CDevices();
