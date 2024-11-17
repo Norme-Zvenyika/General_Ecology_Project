@@ -31,7 +31,7 @@ void AlarmManager::begin() {
     // Check if RTC lost power and set time if needed
     if (rtc.lostPower()) {
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-        Serial.println("RTC lost power. Time set to compile time.");
+        // Serial.println("RTC lost power. Time set to compile time.");
     }
 
     // Configure RTC
@@ -111,7 +111,7 @@ void AlarmManager::resetAlarm() {
     DateTime nextAlarm = now + calculateAlarmOffset();
 
     if (!rtc.setAlarm1(nextAlarm, DS3231_A1_Minute)) {
-        Serial.println("Error: Failed to set Alarm1!");
+        // Serial.println("Error: Failed to set Alarm1!");
         return;
     }
 
@@ -146,6 +146,6 @@ void AlarmManager::update() {
         handleAlarm();
     }
 
-    Serial.print("Current time: ");
-    Serial.println(getDateTime(now));
+    // Serial.print("Current time: ");
+    // Serial.println(getDateTime(now));
 }
