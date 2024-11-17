@@ -4,6 +4,7 @@
 #define LEDCONTROL_H
 
 #include <Arduino.h>
+#include <String.h>
 
 class LEDControl
 {
@@ -20,6 +21,8 @@ public:
     // AlarmManager-driven LED update
     void setAlarmState(bool active);
 
+    String getFilterStatus() const;    // Get current filter status
+
     // Turn off all LEDs
     void allOff();
 
@@ -30,6 +33,7 @@ private:
 
     // Track if alarm has control over LEDs
     bool _alarmActive;
+    String _filterStatus;   // Current filter status
 
     // Helper methods
     void _setRed();
