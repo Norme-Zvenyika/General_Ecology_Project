@@ -11,12 +11,17 @@ WaterFilter::WaterFilter(LEDControl& ledControl, ResetButton& resetButton, Water
 {
 }
 
+// register water filter for button press
+void WaterFilter::begin() {
+    _resetButton.registerCallback([this]() { resetFilter(); }); // Register callback
+}
+
 // Update method to be called regularly in the main loop
 void WaterFilter::update()
 {
     // call the water flow sensor
     _waterFlowSensor.update();
-    
+
     // Get the volume passed in the current interval from the WaterFlowSensor
     float volumePassed = _waterFlowSensor.getVolumePassed();
 
@@ -28,12 +33,6 @@ void WaterFilter::update()
 
     // Directly update LEDs based on used percentage
     _ledControl.update(_usedPercentage);
-
-    // Directly check if the ResetButton is pressed and reset filter
-    if (_resetButton.isPressed())  
-    {
-        resetFilter();  // Call reset directly
-    }
 }
 
 // Reset the filter usage when the filter is replaced
