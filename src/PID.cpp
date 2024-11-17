@@ -43,8 +43,22 @@ void PID::update()
     // Display data on BLE LCD and prepare it for Bluetooth transmission
     float flowRate = _waterFlowSensor.getFlowRate();
     float totalVolume = _waterFilter.getTotalVolume();
+    String filterStatus = _ledControl.getFilterStatus();
 
-    unsigned long currentMillis = millis();
+    // Fetch current date and last reset date
+    // String currentDate = _alarmManager.getCurrentDateTime();
+    String lastResetDate = _alarmManager.getLastResetDateTime();
 
-    _ble.displayData(flowRate, totalVolume);
+    // // Print filter status
+    // Serial.print("Filter Status: ");
+    // Serial.println(filterStatus);
+
+    // // Print the dates for debugging
+    // Serial.print("Current Date: ");
+    // Serial.println(currentDate);
+    // Serial.print("Last Reset Date: ");
+    // Serial.println(lastResetDate);
+
+
+    _ble.displayData(flowRate, totalVolume, filterStatus, lastResetDate);
 }
