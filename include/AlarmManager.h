@@ -6,6 +6,7 @@
 #include <RTClib.h>
 #include <SPI.h>
 #include <string>
+#include "LEDControl.h"
 #include "ResetButton.h"
 
 class AlarmManager {
@@ -22,6 +23,8 @@ private:
     int alarmHours;
     int alarmMinutes;
 
+    LEDControl& ledControl;
+
     // Private methods
     TimeSpan calculateAlarmOffset();
     String getDateTime(const DateTime &dt) const;
@@ -35,7 +38,7 @@ private:
 
 public:
     // Constructor
-    AlarmManager(uint8_t interruptPin, ResetButton& button, int months, int days, int hours, int minutes);
+    AlarmManager(uint8_t interruptPin, ResetButton& button, int months, int days, int hours, int minutes, LEDControl& ledControl);
 
     // Initialization and periodic updates
     void begin();

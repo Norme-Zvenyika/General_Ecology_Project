@@ -5,8 +5,9 @@
 volatile bool AlarmManager::alarmTriggered = false;
 
 // Constructor
-AlarmManager::AlarmManager(uint8_t interruptPin, ResetButton& button, int months, int days, int hours, int minutes)
+AlarmManager::AlarmManager(uint8_t interruptPin, ResetButton& button, int months, int days, int hours, int minutes, LEDControl& ledControl)
     : resetButton(button),
+      ledControl(ledControl),
       alarmMonths(months),
       alarmDays(days),
       alarmHours(hours),
@@ -115,6 +116,7 @@ void AlarmManager::resetAlarm() {
     }
 
     lastResetTime = now;
+    ledControl.setAlarmState(false);
 
     // Serial.println("Alarm set successfully.");
     // Serial.print("Alarm scheduled for: ");
@@ -123,7 +125,7 @@ void AlarmManager::resetAlarm() {
 
 // Handle alarm when triggered
 void AlarmManager::handleAlarm() {
-    Serial.println("Please, change filter!");
+    ledControl.setAlarmState(true);
 }
 
 String AlarmManager::getLastResetDateTime() {
