@@ -10,10 +10,10 @@ PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t f
       _resetButton(resetButtonPin),
       _waterFilter(_ledControl, _resetButton, _waterFlowSensor, filterCapacityLiters),
       _ble(deviceName, serviceUUID, characteristicUUID_RX, characteristicUUID_TX),
+      _alarmManager(clockInterruptPin, _resetButton, months, days, hours, minutes, _ledControl),
       _filterCapacityLiters(filterCapacityLiters),
       _pulsesPerLiterConversion(pulsesPerLiterConversion),
-      _flowRateScalingFactor(flowRateScalingFactor),
-      _alarmManager(clockInterruptPin, _resetButton, months, days, hours, minutes)
+      _flowRateScalingFactor(flowRateScalingFactor)
 {
     // Initialization logic if needed
 }
