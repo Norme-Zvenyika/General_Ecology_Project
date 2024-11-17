@@ -32,18 +32,17 @@ void LEDControl::update(float usedPercentage)
     {
         _setGreen();
     }
-    else if (usedPercentage > 50.0 && usedPercentage <= 75.0)
+    else if (usedPercentage > 50.0 && usedPercentage <= 80.0)
     {
         _setYellow();
     }
-    else if (usedPercentage > 75.0 && usedPercentage <= 100.0)
+    else if (usedPercentage > 80.0 && usedPercentage <= 100.0)
     {
         _setRed();
     }
     else
     {
         // Filter capacity exceeded
-        // You can implement additional behavior here, e.g., blinking the red LED
         _setRed();
     }
 }
