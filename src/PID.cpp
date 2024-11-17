@@ -3,7 +3,8 @@
 // Constructor to initialize all components
 PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin,
          float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor,
-         const String& serviceUUID, const String& characteristicUUID_RX, const String& characteristicUUID_TX, const String& deviceName)
+         const String& serviceUUID, const String& characteristicUUID_RX, const String& characteristicUUID_TX, const String& deviceName,
+         uint8_t clockInterruptPin, int months, int days, int hours, int minutes)
     : _ledControl(redLedPin, yellowLedPin, greenLedPin),
       _waterFlowSensor(flowSensorPin, pulsesPerLiterConversion, flowRateScalingFactor),
       _resetButton(resetButtonPin),
@@ -11,7 +12,8 @@ PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t f
       _ble(deviceName, serviceUUID, characteristicUUID_RX, characteristicUUID_TX),
       _filterCapacityLiters(filterCapacityLiters),
       _pulsesPerLiterConversion(pulsesPerLiterConversion),
-      _flowRateScalingFactor(flowRateScalingFactor)
+      _flowRateScalingFactor(flowRateScalingFactor),
+      _alarmManager(clockInterruptPin, _resetButton, months, days, hours, minutes)
 {
     // Initialization logic if needed
 }
@@ -21,13 +23,20 @@ void PID::begin()
 {
     _ledControl.begin();       // Initialize the LED system
     _resetButton.begin();      // Initialize the reset button
+    _waterFilter.begin();
     _waterFlowSensor.begin();  // Initialize the water flow sensor
     _ble.begin();              // Initialize the BLE module
+    _alarmManager.begin();              // Initialize the BLE module
 }
 
 // Update method to be called in the main loop to run everything
 void PID::update()
 {
+    _resetButton.update();
+
+    // Update alram manager
+    _alarmManager.update();
+
     // Update the water filter system (this handles flow rate, volume, and reset button)
     _waterFilter.update();
 
