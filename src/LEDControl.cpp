@@ -33,15 +33,18 @@ void LEDControl::update(float usedPercentage)
 
     if (usedPercentage <= 50.0)
     {
+        _filterStatus = "Excellent";
         _setGreen();
     }
     else if (usedPercentage > 50.0 && usedPercentage <= 80.0)
     {
+        _filterStatus = "Average";
         _setYellow();
     }
     else
     {
         // Filter capacity exceeded
+        _filterStatus = "Poor";
         _setRed();
     }
 }
@@ -52,9 +55,15 @@ void LEDControl::setAlarmState(bool active) {
     if (_alarmActive) {
         allOff();
         _setRed(); // Alarm always sets the LED to red
+        _filterStatus = "Poor";
     } else {
         allOff(); // Release LED control
     }
+}
+
+// Get the current filter status
+String LEDControl::getFilterStatus() const {
+    return _filterStatus;
 }
 
 // Private helper methods
