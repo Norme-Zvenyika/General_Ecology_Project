@@ -28,6 +28,9 @@ void LEDControl::allOff()
 // Update the LED status based on used percentage
 void LEDControl::update(float usedPercentage)
 {
+    // If alarm is active, ignore water filter control
+    if (_alarmActive) return;
+
     if (usedPercentage <= 50.0)
     {
         _setGreen();
@@ -36,14 +39,21 @@ void LEDControl::update(float usedPercentage)
     {
         _setYellow();
     }
-    else if (usedPercentage > 80.0 && usedPercentage <= 100.0)
-    {
-        _setRed();
-    }
     else
     {
         // Filter capacity exceeded
         _setRed();
+    }
+}
+
+// Set alarm state and control LEDs accordingly
+void LEDControl::setAlarmState(bool active) {
+    _alarmActive = active;
+    if (_alarmActive) {
+        allOff();
+        _setRed(); // Alarm always sets the LED to red
+    } else {
+        allOff(); // Release LED control
     }
 }
 

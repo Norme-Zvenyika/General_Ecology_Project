@@ -17,6 +17,9 @@ public:
     // Update the LED status based on used percentage
     void update(float usedPercentage);
 
+    // AlarmManager-driven LED update
+    void setAlarmState(bool active);
+
     // Turn off all LEDs
     void allOff();
 
@@ -24,6 +27,9 @@ private:
     uint8_t _redPin;
     uint8_t _yellowPin;
     uint8_t _greenPin;
+
+    // Track if alarm has control over LEDs
+    bool _alarmActive;
 
     // Helper methods
     void _setRed();
