@@ -1,8 +1,8 @@
 #include "PID.h"
 
 // Constructor to initialize all components
-PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin, 
-         float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor, 
+PID::PID(uint8_t redLedPin, uint8_t yellowLedPin, uint8_t greenLedPin, uint8_t flowSensorPin, uint8_t resetButtonPin,
+         float filterCapacityLiters, float pulsesPerLiterConversion, float flowRateScalingFactor,
          const String& serviceUUID, const String& characteristicUUID_RX, const String& characteristicUUID_TX, const String& deviceName)
     : _ledControl(redLedPin, yellowLedPin, greenLedPin),
       _waterFlowSensor(flowSensorPin, pulsesPerLiterConversion, flowRateScalingFactor),
@@ -34,7 +34,8 @@ void PID::update()
     // Display data on BLE LCD and prepare it for Bluetooth transmission
     float flowRate = _waterFlowSensor.getFlowRate();
     float totalVolume = _waterFilter.getTotalVolume();
-    
-    _ble.displayData(flowRate, totalVolume);  // Display on the LCD
-    // String dataForBluetooth = _ble.prepareDataForBluetooth(flowRate, totalVolume);  // Prepare data for Bluetooth transmission
+
+    unsigned long currentMillis = millis();
+
+    _ble.displayData(flowRate, totalVolume);
 }
