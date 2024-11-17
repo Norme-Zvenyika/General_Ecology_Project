@@ -29,10 +29,10 @@ void BLE::begin()
         _lcd.clear();        // Clear the display
 
         // Display welcome message
-        _lcd.setCursor(0, 0);      
+        _lcd.setCursor(0, 0);
         _lcd.print("Welcome!");
-        _lcd.setCursor(0, 1);     
-        _lcd.print(_deviceName);   
+        _lcd.setCursor(0, 1);
+        _lcd.print(_deviceName);
 
         delay(4000);  // Display for 4 seconds
     }
@@ -57,7 +57,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 
   void onDisconnect(BLEServer* pServer) override {
     // Optional: Handle what happens when a client disconnects
-    
+
     // Restart advertising after disconnect
     BLEDevice::startAdvertising();
   }
