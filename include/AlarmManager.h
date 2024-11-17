@@ -30,9 +30,6 @@ private:
     String getDateTime(const DateTime &dt) const;
     void handleAlarm();
 
-    String getLastResetDateTime();    // Get last reset time
-    String getCurrentDateTime();     // Get current time
-
     // Static interrupt handler
     static void IRAM_ATTR onAlarm();
 
@@ -44,6 +41,9 @@ public:
     void begin();
     void update();
     void resetAlarm();
+
+    String getLastResetDateTime();    // Get last reset time
+    String getCurrentDateTime();     // Get current time
 };
 
 #endif // ALARM_MANAGER_H
