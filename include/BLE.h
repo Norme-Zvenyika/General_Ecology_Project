@@ -27,7 +27,7 @@ public:
     bool scanI2CDevices();
 
 private:
-    
+
     // I2C LCD setup (default address 0x27, 16 columns, 2 rows)
     LiquidCrystal_I2C _lcd = LiquidCrystal_I2C(0x27, 16, 2);
 
